@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Iframe Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .parent-panel {
+            border: 2px solid #007acc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .iframe-container {
+            border: 2px solid #28a745;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            width: 200px;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Iframe Communication</h1>
+    
+    <div class="container">
+        <div class="parent-panel">
+            <h3>Parent Controls</h3>
+            
+            <div>
+                <input type="text" id="messageText" placeholder="Enter message" value="Hello from parent!">
+                <button id="sendMessage">Send Message</button>
+            </div>
+            
+            <div>
+                <button id="getStatus">Get Iframe Status</button>
+            </div>
+            
+            <div class="result" id="results"></div>
+        </div>
+        
+        <div class="iframe-container">
+            <iframe id="testIframe" src="/examples/iframe-content.html"></iframe>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the actual built library
+        import { createChannel } from '/dist/index.mjs';
+        
+        // Create channels
+        const messageChannel = createChannel('/message');
+        const statusChannel = createChannel('/status');
+        
+        const iframe = document.getElementById('testIframe');
+        
+        function addResult(message) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        // Wait for iframe to load
+        iframe.onload = () => {
+            addResult('✓ Iframe loaded and ready');
+        };
+        
+        // Send message to iframe
+        document.getElementById('sendMessage').addEventListener('click', async () => {
+            const text = document.getElementById('messageText').value;
+            try {
+                addResult(`📤 Sending: "${text}"`);
+                await messageChannel.request({ text }, iframe.contentWindow);
+                addResult('✅ Message sent successfully');
+            } catch (error) {
+                addResult(`❌ Error: ${error}`);
+            }
+        });
+        
+        // Get status from iframe
+        document.getElementById('getStatus').addEventListener('click', async () => {
+            try {
+                addResult('📤 Requesting status...');
+                const status = await statusChannel.request({}, iframe.contentWindow);
+                addResult(`✅ Status: ${status.message} (${status.time})`);
+            } catch (error) {
+                addResult(`❌ Error: ${error}`);
+            }
+        });
+    </script>
+</body>
+</html>

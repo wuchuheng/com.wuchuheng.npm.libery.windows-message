@@ -1,0 +1,44 @@
+{
+  "name": "@wuchuheng/window-message",
+  "version": "1.0.0",
+  "description": "A modern TypeScript library for cross-window messaging",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run build",
+    "example": "npm run build && npx http-server -p 8080 -o examples/"
+  },
+  "keywords": [
+    "window",
+    "messaging",
+    "postMessage",
+    "cross-window",
+    "typescript",
+    "browser"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "http-server": "^14.1.1",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  }
+}

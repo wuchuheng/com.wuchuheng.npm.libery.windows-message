@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe Content</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f8ff;
+        }
+        .header {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            margin: -20px -20px 20px -20px;
+            text-align: center;
+        }
+        .status {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .message-display {
+            background: #e7f3ff;
+            border: 1px solid #007acc;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            min-height: 60px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h3>Iframe Content - Handler Side</h3>
+    </div>
+    
+    <div class="status">
+        <strong>Status:</strong> ✓ Handlers ready and waiting for messages
+    </div>
+    
+    <div class="message-display" id="messageDisplay">
+        No messages received yet
+    </div>
+    
+    <div class="log" id="log"></div>
+
+    <script type="module">
+        // Import the actual built library
+        import { createChannel } from '/dist/index.mjs';
+        
+        // Create the same channels as parent
+        const messageChannel = createChannel('/message');
+        const statusChannel = createChannel('/status');
+        
+        let lastMessage = 'No messages received yet';
+        
+        function addLog(message) {
+            const log = document.getElementById('log');
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Message handler - receives and displays messages
+        messageChannel.handle(async (request) => {
+            const { text } = request;
+            addLog(`Received message: "${text}"`);
+            
+            // Update display
+            lastMessage = text;
+            document.getElementById('messageDisplay').textContent = `📨 Received: "${text}"`;
+            
+            // Simulate processing time
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            addLog('Message processed');
+            // No return needed for void response
+        });
+        
+        // Status handler - returns current status
+        statusChannel.handle(async (request) => {
+            addLog('Status requested');
+            
+            return {
+                message: lastMessage,
+                time: new Date().toLocaleTimeString(),
+                ready: true
+            };
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            addLog('Iframe loaded - handlers ready');
+        });
+    </script>
+</body>
+</html>
