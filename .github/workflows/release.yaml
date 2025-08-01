@@ -21,29 +21,22 @@ jobs:
           node-version: '22.14'
           registry-url: 'https://registry.npmjs.org'
           
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: '10.7.0'
           
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Update the version into package.json without prefix 'v'
         run: |
           version=$(echo ${{ github.ref }} | sed -n -e 's/refs\/tags\/v\(.*\)/\1/p')
           echo "version: $version"
-          pnpm version --no-git-tag-version $version
+          npm version --no-git-tag-version $version
         
       - name: Build (if build script exists)
         run: |
-          if [ -n "$(pnpm run --silent build 2>/dev/null || true)" ]; then
-            pnpm run build
+          if [ -n "$(npm run --silent build 2>/dev/null || true)" ]; then
+            npm run build
           else
             echo "No build script found, skipping build step"
           fi
         
       - name: Publish to NPM
-        run: pnpm publish --access public --no-git-checks
+        run: npm publish --access public --no-git-checks
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
